@@ -1,4 +1,6 @@
 import bisect
+from cmath import pi
+from tokenize import maybe
 
 """
 Дефинирање на класа за структурата на проблемот кој ќе го решаваме со пребарување.
@@ -479,112 +481,148 @@ class Pacman(Problem):
         self.gridSize = 10
         self.totalPoints = initial[3]
         self.points = initial[4]
+        self.first = 0
 
     def successor(self, state):
         succ = dict()
 
-        # state = manx, many, orient, numofp, [points]
         if state[2] == "istok":
             if state[0] < self.gridSize - 1:
                 nextMove = (state[0]+1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiPravo"] = (state[0]+1, state[1], state[2], state[3])
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiPravo"] = (state[0]+1, state[1], state[2], newPoints, state[4], state[5])
 
             if state[0] > 0:
                 nextMove = (state[0] - 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x!= nextMove, state[3]))
-                succ["ProdolzhiNazad"] = (state[0] - 1, state[1], "zapad", state[3])
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x!= nextMove, state[3]))
+                    succ["ProdolzhiNazad"] = (state[0] - 1, state[1], "zapad", newPoints, state[4], state[5])
 
             if state[1] < self.gridSize - 1:
                 nextMove = (state[0], state[1]+1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x!= nextMove, state[3]))
-                succ["SvrtiLevo"] = (state[0], state[1]+1, "sever", state[3])
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x!= nextMove, state[3]))
+                    succ["SvrtiLevo"] = (state[0], state[1]+1, "sever", newPoints, state[4], state[5])
 
             if state[1] > 0:
                 nextMove = (state[0], state[1]-1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x!= nextMove, state[3]))
-                succ["SvrtiDesno"] = (state[0], state[1]-1, "jug", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x!= nextMove, state[3]))
+                    succ["SvrtiDesno"] = (state[0], state[1]-1, "jug",  newPoints, state[4], state[5])
+
+            if self.first < 10000:
+                # print(state)
+                print(f"{self.first}. {succ}")
+                self.first += 1
 
         elif state[2] == "zapad":
             if state[0] > 0:
                 nextMove = (state[0] - 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiPravo"] = (state[0] - 1, state[1], state[2], state[3])
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiPravo"] = (state[0] - 1, state[1], state[2],  newPoints, state[4], state[5])
 
             if state[0] < self.gridSize - 1:
                 nextMove = (state[0] + 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiNazad"] = (state[0] + 1, state[1], "istok", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiNazad"] = (state[0] + 1, state[1], "istok", newPoints, state[4], state[5])
 
             if state[1] > 0:
                 nextMove = (state[0], state[1] - 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiLevo"] = (state[0], state[1] - 1, "jug", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiLevo"] = (state[0], state[1] - 1, "jug", newPoints, state[4], state[5])
 
             if state[1] < self.gridSize - 1:
                 nextMove = (state[0], state[1] + 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiDesno"] = (state[0], state[1] + 1, "sever", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiDesno"] = (state[0], state[1] + 1, "sever", newPoints, state[4], state[5])
 
         elif state[2] == "sever":
             if state[1] < self.gridSize - 1:
                 nextMove = (state[0], state[1] + 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiPravo"] = (state[0], state[1] + 1, state[2], state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiPravo"] = (state[0], state[1] + 1, state[2], newPoints, state[4], state[5])
 
             if state[1] > 0:
                 nextMove = (state[0], state[1] - 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiNazad"] = (state[0], state[1] - 1, "jug", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiNazad"] = (state[0], state[1] - 1, "jug", newPoints, state[4], state[5])
 
             if state[0] > 0:
                 nextMove = (state[0] - 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiLevo"] = (state[0] - 1, state[1], "zapad", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiLevo"] = (state[0] - 1, state[1], "zapad", newPoints, state[4], state[5])
 
             if state[0] < self.gridSize - 1:
                 nextMove = (state[0] + 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiDesno"] = (state[0] + 1, state[1], "istok", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiDesno"] = (state[0] + 1, state[1], "istok",  newPoints, state[4], state[5])
 
         elif state[3] == "jug":
             if state[1] > 0:
                 nextMove = (state[0], state[1] - 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiPravo"] = (state[0], state[1] - 1, state[2], state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiPravo"] = (state[0], state[1] - 1, state[2], newPoints, state[4], state[5])
 
             if state[1] < self.gridSize - 1:
                 nextMove = (state[0], state[1] + 1)
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["ProdolzhiNazad"] = (state[0], state[1] + 1, "sever", state[3])
+                if nextMove not in state[5]: 
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["ProdolzhiNazad"] = (state[0], state[1] + 1, "sever",  newPoints, state[4], state[5])
 
             if state[1] < self.gridSize - 1:
                 nextMove = (state[0] + 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiLevo"] = (state[0] + 1, state[1], "istok", state[3])
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiLevo"] = (state[0] + 1, state[1], "istok", newPoints, state[4], state[5])
 
             if state[0] > 0:
                 nextMove = (state[0] - 1, state[1])
-                if nextMove in state[3]:
-                    state[3] = list(filter(lambda x: x != nextMove, state[3]))
-                succ["SvrtiDesno"] = (state[0] - 1, state[1], "zapad", state[3])
-
-        return succ
+                if nextMove not in state[5]:
+                    newPoints = state[3]
+                    if nextMove in state[3]:
+                        newPoints = tuple(filter(lambda x: x != nextMove, state[3]))
+                    succ["SvrtiDesno"] = (state[0] - 1, state[1], "zapad", newPoints, state[4], state[5])
+        return succ 
 
     def actions(self, state):
         return self.successor(state).keys()
@@ -593,17 +631,38 @@ class Pacman(Problem):
         return self.successor(state)[action]
 
     def goal_test(self, state):
-        return len(state[4]) == 0
+        return len(state[3]) == 0
 
 
 if __name__ == "__main__":
-    manX = input()
-    manY = input()
+    manX = int(input())
+    manY = int(input())
     orientation = input()
-    numOfPoints = input()
+    numOfPoints = int(input())
+    # walls = ((6,1),(6,2),(6,3),(6,4))
+    # walls = ((5,0), (5,1), (4,1))
+    # walls = ((3,3), (4,3), (5,3), (6,1), (6,0))
+
+    walls = ((2,0), (2,2))
+    # walls = ()
+    # walls = ((6, 0), (4,1), (5,1), (6,1), (8,1), (1, 2), (6, 2), (1,3), (1,4), (7,4), (8,4), (4, 5), (0, 6), (3,6), (4,6), (5,6), (4,7), (8,7), (9,7), (0,8), (8,8), (9,8), (0,9), (1,9), (2,9), (3,9), (6,9))
     points = []
     for i in range(int(numOfPoints)):
         points.append(parsePoints(input()))
 
-    p = Pacman((manX, manY, orientation, numOfPoints, points))
-    print(depth_first_graph_search(p).solution())
+    p = Pacman((manX, manY, orientation, tuple(points), numOfPoints, walls))
+
+
+    # print the board, its rotated 90 degrees in right
+    # for x in range(10):
+    #     for y in range(10):
+    #         if (x,y) == (manX, manY): print("X", end="")
+    #         elif (x,y) in points: print("O", end="")
+    #         elif (x,y) in walls: print("W", end="")
+    #         else: print("-", end="")
+    #     print()
+
+    print(breadth_first_graph_search(p).solution())
+    # P P P P N D P D P P P P L P P L P P P P P D
+    # P P P P P P P P L P P P P L P P P P P D
+    # P P P P P L P D P P L P P L P P P P P D
