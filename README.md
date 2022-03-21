@@ -1,5 +1,6 @@
 # AI-test1
 Task 1
+        
         Given a grid size (self.gridSize), food represented by coordinates (self.points),
         walls given like a array of coordinates, current orientation of the pacman (N, S, W, E) and
         coordinates for the pacman (player), eat all the food from the grid
@@ -7,6 +8,7 @@ Task 1
         The pacman can move in four directions( GoForward, GoBackwards, TurnLeft, TurnRight )
         
 Task 2
+
         Given a row with rowLen spaces and numOfDisk disks where
         the disks are in an ascending order and start at the beginning
         of the row, take minimal amount of steps to rearrange the disks
