@@ -466,42 +466,88 @@ def uniform_cost_search(problem):
 
 class Disk(Problem):
 
-    def __init__(self, initial, goal=None):
+    """
+        Given a row with rowLen spaces and numOfDisk disks where
+        the disks are in an ascending order and start at the beginning
+        of the row, take minimal amount of steps to rearrange the disks
+        so they get sorted in ascending order but from the end of the row.
+
+        Example:
+            [1, 2, 3, 0, 0, 0, 0] -> [0, 0, 0, 0, 3, 2, 1]
+
+        Possible steps for each disk are:
+            D1: Disk x -> Disk x goes one space to the right if that space is free
+            L1: Disk x -> Disk x goes one space to the left if that space is free
+            D2: Disk x -> Disk x goes two spaces to the right if that space is free
+                          and the space between the current position and next position
+                          is not free ( it's not zero )
+            L2: Disk x -> Disk x goes two spaces to the left if that space is free
+                          and the space between the current position and the next position
+                          is not free ( it's not zero)
+    """
+    def __init__(self, initial, numOfDisk, rowLen, resArr, goal=None):
         super().__init__(initial, goal)
+        self.numOfDisk = numOfDisk
+        self.rowLen = rowLen
+        self.resArr = resArr
+        self.arr = arr
 
     def successor(self, state):
-        # numOfDisk, rowLen, arr
-        # 1 2 3 x x x x
-        # ->
-        # x x x x 3 2 1
-        print("Succ")
         succ = dict()
+        # state[0] = arr -> 1 2 3 0 0 0 0
+        # state[1] = diskPositions -> (0, 1, 2)
 
-        for i in range(state[0]):
-            if i+1 < state[1] and state[2][i+1] == 0:
-                new_arr = state[2].copy()
-                new_arr[i+1] = new_arr[i]
-                new_arr[i] = 0
-                succ[f"D1: Disk {i}"] = (state[0], state[1], new_arr)
+        for disk in range(self.numOfDisk):
+            tmp = list(state[1])
+            currDiskPos = tmp[disk]
 
-            elif i+2 < state[1] and i+1 != 0:
-                new_arr = state[2].copy()
-                new_arr[i + 2] = new_arr[i]
-                new_arr[i] = 0
-                succ[f"D2: Disk {i}"] = (state[0], state[1], new_arr)
+            if currDiskPos + 1 < self.rowLen and state[0][currDiskPos + 1] == 0:
+                new_arr = list(state[0])
+                new_arr[currDiskPos + 1] = new_arr[currDiskPos]
+                new_arr[currDiskPos] = 0
+                new_arr = tuple(new_arr)
 
-            elif i > 0 and state[2][i-1] == 0:
-                new_arr = state[2].copy()
-                new_arr[i - 1] = new_arr[i]
-                new_arr[i] = 0
-                succ[f"L1: Disk {i}"] = (state[0], state[1], new_arr)
+                newDiskPos = list(state[1])
+                newDiskPos[disk] = currDiskPos + 1
+                newDiskPos = tuple(newDiskPos)
+                self.arr = new_arr
+                succ[f"D1: Disk {disk+1}"] = (new_arr, newDiskPos)
 
-            elif i > 1 and state[2][i-1] !=0 and state[2][i-2] == 0:
-                new_arr = state[2].copy()
-                new_arr[i - 2] = new_arr[i]
-                new_arr[i] = 0
-                succ[f"L2: Disk {i}"] = (state[0], state[1], new_arr)
-        print(succ)
+            elif currDiskPos + 2 < self.rowLen and state[0][currDiskPos + 1] != 0 and state[0][currDiskPos + 2] == 0:
+                new_arr = list(state[0])
+                new_arr[currDiskPos + 2] = new_arr[currDiskPos]
+                new_arr[currDiskPos] = 0
+                new_arr = tuple(new_arr)
+
+                newDiskPos = list(state[1])
+                newDiskPos[disk] = currDiskPos + 2
+                newDiskPos = tuple(newDiskPos)
+                self.arr = new_arr
+                succ[f"D2: Disk {disk+1}"] = (new_arr, newDiskPos)
+
+            elif currDiskPos > 0 and state[0][currDiskPos - 1] == 0:
+                new_arr = list(state[0])
+                new_arr[currDiskPos - 1] = new_arr[currDiskPos]
+                new_arr[currDiskPos] = 0
+                new_arr = tuple(new_arr)
+
+                newDiskPos = list(state[1])
+                newDiskPos[disk] = currDiskPos - 1
+                newDiskPos = tuple(newDiskPos)
+                self.arr = new_arr
+                succ[f"L1: Disk {disk+1}"] = (new_arr, newDiskPos)
+
+            elif currDiskPos > 1 and state[0][currDiskPos - 1] != 0 and state[0][currDiskPos - 2] == 0:
+                new_arr = list(state[0])
+                new_arr[currDiskPos - 2] = new_arr[currDiskPos]
+                new_arr[currDiskPos] = 0
+                new_arr = tuple(new_arr)
+
+                newDiskPos = list(state[1])
+                newDiskPos[disk] = currDiskPos - 2
+                newDiskPos = tuple(newDiskPos)
+                self.arr = new_arr
+                succ[f"L2: Disk {disk+1}"] = (new_arr, newDiskPos)
         return succ
 
     def actions(self, state):
@@ -511,32 +557,38 @@ class Disk(Problem):
         return self.successor(state)[action]
 
     def goal_test(self, state):
-        for x in range(state[1]):
-            if state[2][x] != state[3][x]:
+        for x in range(self.rowLen):
+            if state[0][x] != self.resArr[x]:
                 return False
         return True
 
-    def value(self):
-        pass
 
 
 if __name__ == "__main__":
     numOfDisk = int(input())
     rowLen = int(input())
 
+    if numOfDisk == rowLen:
+        print("Impossible to solve")
+        exit()
+
     arr = [0 for x in range(rowLen)]
 
     for x in range(numOfDisk):
-        arr[x] = x+1
-
+        arr[x] = x + 1
 
     counter = 1
     resArr = [0 for x in range(rowLen)]
-    for x in range(rowLen - 1, numOfDisk, -1):
+    for x in range(rowLen - 1, rowLen - numOfDisk - 1, -1):
         resArr[x] = counter
         counter += 1
 
-    # resArr e kako treba da izgleda krajnoto array
-    d = Disk((numOfDisk, rowLen, arr, resArr))
-    print(breadth_first_graph_search(d).solve())
-    print(uniform_cost_search(d).solve())
+    arr = tuple(arr)
+    resArr = tuple(resArr)
+    diskPositions = tuple((x for x in range(numOfDisk)))
+
+    d = Disk((arr, diskPositions), numOfDisk, rowLen, resArr)
+    print(breadth_first_graph_search(d).solution())
+
+
+
