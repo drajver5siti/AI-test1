@@ -23,4 +23,4 @@ Task 2
                           is not free ( it's not zero )
             L2: Disk x -> Disk x goes two spaces to the left if that space is free
                           and the space between the current position and the next position
-                          is not free ( it's not zero)
+                          is not free ( it's not zero).
